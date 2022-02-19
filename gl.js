@@ -7,6 +7,7 @@ const API = {
    setUniforms,
    setBufferData,
    setBuffersData,
+   setViewPort,
    enableVertexAttribArray,
    bindAttribPointer,
    bindBuffer,
@@ -26,6 +27,12 @@ class GL {
       
       for (const key of presetsList)
          this[key] = API[key].bind(this);
+      
+      this.setClearColor();
+   }
+
+   setClearColor(color = [0.03, 0.03, 0.08, 1.0]) {
+      this.gl.clearColor(...color);
    }
 };
 
@@ -71,7 +78,7 @@ const compileShader = (src, type, gl) => {
    return shader;
 };
 
-function createProgram(shaders) {
+function createProgram(shaders, name) {
    const 
       gl = this.gl,
       keys = Object.keys(shaders),
@@ -79,12 +86,13 @@ function createProgram(shaders) {
 
    for (let i = 1; i < keys.length; i++) {
       const fs = compileShader(shaders[keys[i]], gl.FRAGMENT_SHADER, gl);
-      this.programs = new GLProgram(vs, fs, gl);
+      this.programs[name] = new GLProgram(vs, fs, gl);
    };
 };
 
-function createPrograms(programsList) {
-   for (const shaders of programsList) this.createProgram(shaders);
+function createPrograms(programs) {
+   for (const name in programs) 
+      this.createProgram(programs[name], name);
 };
 
 function createBuffer() {
@@ -145,6 +153,10 @@ function setBuffersData(scene, buffer, bufferType) {
       this.setBufferData(buffer[model], scene[model], bufferType);
       buffer[model].n = scene[model].length / 3;
    });
+};
+
+function setViewPort(w, h) {
+   this.gl.viewport(0, 0, w, h);
 };
 
 function enableVertexAttribArray(index = 0) {

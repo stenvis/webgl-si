@@ -23,7 +23,7 @@ function wareframe(model) {
    for (let i = 0; i < pointersArray.length; i++)
       orderedArray.push(verticesDict[pointersArray[i]]);
 
-   return orderedArray.flat();
+   return new Float32Array(orderedArray.flat());
 };
 
 export default Translator;

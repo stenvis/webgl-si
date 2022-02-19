@@ -10,9 +10,7 @@ function copyMatrix(mat) {
 };
 
 function createMatrices(obj, list) {
-   list.forEach(name => {
-      obj[name] = new Matrix4();
-   });
+   for (const name of list) obj[name] = new Matrix4();
 };
 
 // cuon-matrix.js (c) 2012 kanda and matsuda
@@ -106,7 +104,7 @@ Matrix4.prototype.concat = function(other) {
     e[i+8]  = ai0 * b[8]  + ai1 * b[9]  + ai2 * b[10] + ai3 * b[11];
     e[i+12] = ai0 * b[12] + ai1 * b[13] + ai2 * b[14] + ai3 * b[15];
   }
-  
+
   return this;
 };
 Matrix4.prototype.multiply = Matrix4.prototype.concat;
@@ -372,7 +370,6 @@ Matrix4.prototype.frustum = function(left, right, bottom, top, near, far) {
  */
 Matrix4.prototype.setPerspective = function(fovy, aspect, near, far) {
   var e, rd, s, ct;
-
   if (near === far || aspect === 0) {
     throw 'null frustum';
   }
