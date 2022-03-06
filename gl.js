@@ -1,18 +1,20 @@
+const { keys } = Object;
+
 const API = {
    createProgram,
    createPrograms,
    createBuffer,
    createBuffers,
    createStub,
-   setUniforms,
+   setMatrix,
+   setUniform,
    setBufferData,
    setBuffersData,
    setViewPort,
-   enableVertexAttribArray,
-   bindAttribPointer,
-   bindBuffer,
+   bindArrayBuffer,
    bindFBO,
-   drawArrays,
+   drawLines,
+   drawPoints,
    drawElements,
    clear,
    stub,
@@ -22,7 +24,7 @@ class GL {
    gl;
    programs = {};
 
-   constructor(gl, presetsList = Object.keys(API)) {
+   constructor(gl, presetsList = keys(API)) {
       this.gl = gl;
       
       for (const key of presetsList)
@@ -31,7 +33,7 @@ class GL {
       this.setClearColor();
    }
 
-   setClearColor(color = [0.03, 0.03, 0.08, 1.0]) {
+   setClearColor(color = [.03, .04, .07, 1.]) {
       this.gl.clearColor(...color);
    }
 };
@@ -78,21 +80,32 @@ const compileShader = (src, type, gl) => {
    return shader;
 };
 
-function createProgram(shaders, name) {
+function createProgram(shaders) {
+   const keys_ = keys(shaders);
+
+   if (keys_.length > 2) return this.createPrograms(shaders);
+
    const 
       gl = this.gl,
-      keys = Object.keys(shaders),
-      vs = compileShader(shaders[keys[0]], gl.VERTEX_SHADER, gl);
+      vs = compileShader(shaders[keys_[0]], gl.VERTEX_SHADER, gl),
+      fs = compileShader(shaders[keys_[1]], gl.FRAGMENT_SHADER, gl);
 
-   for (let i = 1; i < keys.length; i++) {
-      const fs = compileShader(shaders[keys[i]], gl.FRAGMENT_SHADER, gl);
-      this.programs[name] = new GLProgram(vs, fs, gl);
-   };
+   return new GLProgram(vs, fs, gl);
 };
 
-function createPrograms(programs) {
-   for (const name in programs) 
-      this.createProgram(programs[name], name);
+function createPrograms(shaders) {
+   const 
+      gl = this.gl,
+      keys_ = keys(shaders),
+      vs = compileShader(shaders[keys_[0]], gl.VERTEX_SHADER, gl),
+      programs = {};
+ 
+   for (let i = 1; i < keys_.length; i++) {
+      const fs = compileShader(shaders[keys_[i]], gl.FRAGMENT_SHADER, gl);
+      programs[keys_[i]] = new GLProgram(vs, fs, gl);
+   };
+
+   return programs;
 };
 
 function createBuffer() {
@@ -121,21 +134,23 @@ function stub() {
    return;
 };
 
-function setUniforms(programs, presets) {
-   const types = {
-      '1f': (program, data) => { this.gl.uniform1f(program, data); },
-      '2f': (program, data) => { this.gl.uniform2f(program, ...data); },
-      '3f': (program, data) => { this.gl.uniform3f(program, ...data); },
-      '4f': (program, data) => { this.gl.uniform4f(program, ...data); },
-
-      '1i': (program, fbo) => { this.gl.uniform1i(program, fbo[0].bind(fbo[1])); },
+function setMatrix(type, location, elements) {
+   const UNIFORM_TYPES = {
+      '4f': () => { this.gl.uniformMatrix4fv(location, false, elements); },
    };
 
-   Object.keys(presets).forEach(name => {
-      programs[name].use();
-      const program = programs[name].uniforms;
-      presets[name].forEach(args => { types[args[0]](program[args[1]], args[2]); });
-   });
+   UNIFORM_TYPES[type]();
+};
+
+function setUniform(type, location, data) {
+   const UNIFORM_TYPES = {
+      '1f': () => { this.gl.uniform1f(location, data); },
+      '2f': () => { this.gl.uniform2f(location, ...data); },
+      '3f': () => { this.gl.uniform3f(location, ...data); },
+      '4f': () => { this.gl.uniform4f(location, ...data); },
+   };
+
+   UNIFORM_TYPES[type]();
 };
 
 function setBufferData(buffer, data, bufferType = this.gl.ARRAY_BUFFER) {
@@ -148,7 +163,7 @@ function setBufferData(buffer, data, bufferType = this.gl.ARRAY_BUFFER) {
 };
 
 function setBuffersData(scene, buffer, bufferType) {
-   Object.keys(scene).forEach(model => {
+   keys(scene).forEach(model => {
       if (!buffer[model]) return;
       this.setBufferData(buffer[model], scene[model], bufferType);
       buffer[model].n = scene[model].length / 3;
@@ -159,24 +174,22 @@ function setViewPort(w, h) {
    this.gl.viewport(0, 0, w, h);
 };
 
-function enableVertexAttribArray(index = 0) {
+function bindArrayBuffer(buffer, n, index = 0) {
+   this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+   this.gl.vertexAttribPointer(index, n, this.gl.FLOAT, false, 0, 0);
    this.gl.enableVertexAttribArray(index);
-};
-
-function bindAttribPointer(size, arrType, stride, offset, index = 0) {
-   this.gl.vertexAttribPointer(index, size, arrType, false, stride, offset);
-};
-
-function bindBuffer(bufferType, buffer) {
-   this.gl.bindBuffer(bufferType, buffer);
 };
 
 function bindFBO(bufferType, fbo) {
    this.gl.bindFramebuffer(bufferType, fbo);
 };
 
-function drawArrays(figureType, offset, n) {
-   this.gl.drawArrays(figureType, offset, n);
+function drawLines(n, offset) {
+   this.gl.drawArrays(this.gl.LINES, offset, n);
+};
+
+function drawPoints(n, offset) {
+   this.gl.drawArrays(this.gl.POINTS, offset, n);
 };
 
 function drawElements(figureType, indexCount, indexType, offset) {

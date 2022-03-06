@@ -1,8 +1,8 @@
-const Translator = {
-   wareframe,
+const translator = {
+   wireframe,
 };
 
-function wareframe(model) {
+function wireframe(model) {
    const 
       verticesDict = {},
       orderedArray = [],
@@ -26,4 +26,4 @@ function wareframe(model) {
    return new Float32Array(orderedArray.flat());
 };
 
-export default Translator;
+export default translator;

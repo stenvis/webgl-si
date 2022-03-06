@@ -1,18 +1,3 @@
-const Matrix = {
-   copyMatrix,  
-   createMatrices,
-};
-
-function copyMatrix(mat) {
-   return function() {
-      return new Matrix4(mat);
-   };
-};
-
-function createMatrices(obj, list) {
-   for (const name of list) obj[name] = new Matrix4();
-};
-
 // cuon-matrix.js (c) 2012 kanda and matsuda
 /** 
  * This is a class treating 4x4 matrix.
@@ -754,4 +739,15 @@ var Vector4 = function(opt_src) {
   this.elements = v;
 }
 
-export default Matrix;
+function copyMatrix(mat) {
+   return function() {
+      return new Matrix4(mat);
+   };
+};
+
+function createMatrices(obj, list) {
+   for (const name of list) obj[name] = new Matrix4();
+};
+
+export { copyMatrix, createMatrices };
+export default Matrix4;
